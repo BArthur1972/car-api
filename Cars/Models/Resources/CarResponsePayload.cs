@@ -1,9 +1,9 @@
-using System.Text.Json;
 using Newtonsoft.Json;
 
-namespace Cars.Models
+namespace Cars.Models.Resources
 {
-    public class Car
+    // This class will be used to deserialize the response payload
+    public record CarResponsePayload
     {
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
@@ -17,11 +17,9 @@ namespace Cars.Models
         [JsonProperty(PropertyName = "imageUrl")]
         public string? ImageUrl { get; set; }
 
-
-        [JsonConstructor]
-        public Car(string make, string model, string? imageUrl)
+        public CarResponsePayload(string id, string make, string model, string imageUrl)
         {
-            Id = Guid.NewGuid().ToString();
+            Id = id;
             Make = make;
             Model = model;
             ImageUrl = imageUrl;

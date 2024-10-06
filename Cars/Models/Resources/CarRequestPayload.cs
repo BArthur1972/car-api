@@ -5,9 +5,14 @@ namespace Cars.Models.Resources
     // This class will be used to deserialize the request payload
     public record CarRequestPayload
     {
+        [JsonPropertyName("make")]
         public string Make { get; set; }
+
+        [JsonPropertyName("model")]
         public string Model { get; set; }
-        public string ImageUrl { get; set; }
+
+        [JsonPropertyName("imageUrl")]
+        public string? ImageUrl { get; set; }
 
         public CarRequestPayload(string make, string model, string imageUrl)
         {
@@ -18,7 +23,7 @@ namespace Cars.Models.Resources
 
         public override string ToString()
         {
-            return $"Make: {Make}, Model: {Model}, ImageUrl: {ImageUrl}";
+            return $"Make: {Make}, Model: {Model}";
         }
     }
 }

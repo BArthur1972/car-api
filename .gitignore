@@ -7,7 +7,6 @@
 *.suo
 *.user
 *.userosscache
-*.sln
 *.sln.docstates
 target/
 
@@ -25,3 +24,5 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
+.vscode/
+.DS_Store

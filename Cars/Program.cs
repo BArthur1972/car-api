@@ -3,7 +3,6 @@ using Cars.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<CarService>();
 builder.Services.AddSingleton<CosmosService>();
 
 builder.Services.AddControllers();

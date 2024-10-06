@@ -1,4 +1,3 @@
-using Cars.Models;
 using Microsoft.AspNetCore.Mvc;
 using Cars.Services;
 using Cars.Models.Resources;
@@ -6,53 +5,78 @@ using Cars.Models.Resources;
 namespace Cars.Controllers
 {
     [ApiController]
-    [Route("car")]
+    [Route("cars")]
     public class CarController : ControllerBase
     {
         private readonly ILogger<CarController> logger;
-        private readonly CarService carService;
+
         private readonly CosmosService cosmosService;
 
-        public CarController(ILogger<CarController> logger, CarService carService, CosmosService cosmosService)
+        public CarController(ILogger<CarController> logger, CosmosService cosmosService)
         {
             this.logger = logger;
-            this.carService = carService;
             this.cosmosService = cosmosService;
         }
 
         [HttpGet]
         [Route("/getCars")]
-        public Task<IEnumerable<CarRequestPayload>> Get()
+        public async Task<ActionResult> GetCars()
         {
-            return cosmosService.GetCars();
+            try
+            {
+                IEnumerable<CarResponsePayload> cars = await cosmosService.GetCars().ConfigureAwait(false);
+                logger.LogInformation("Cars obtained: " + cars.Count() + " cars");
+                return Ok(cars);
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Failed to get cars", e);
+                return StatusCode(500, "Internal Server Error. Failed to get cars. Check logs for more information.");
+            }
         }
 
         [HttpGet("/getCar/{id}")]
-        public Task<ActionResult<Car>> GetCar(int id)
+        public async Task<ActionResult> GetCar(string id)
         {
-            var car = cosmosService.GetCar(id);
-            if (car == null)
+            try
             {
-                return Task.FromResult<ActionResult<Car>>(NotFound());
+                CarResponsePayload car = await cosmosService.GetCar(id).ConfigureAwait(false);
+                logger.LogInformation("Car obtained: " + car.ToString());
+                return Ok(car);
             }
-            return Task.FromResult<ActionResult<Car>>(Ok(car));
+            catch (Exception e)
+            {
+                logger.LogError("Failed to get car", e);
+                return StatusCode(500, "Internal Server Error. Failed to get car. Check logs for more information.");
+            }
         }
 
         [HttpPost]
         [Route("/addCar")]
-        public async void Post([FromBody] CarRequestPayload car)
+        public async Task<ActionResult> AddCar([FromBody] CarRequestPayload car)
         {
             try {
-                await cosmosService.AddCar(car);
+                await cosmosService.AddCar(car).ConfigureAwait(false);
+                return Ok("Successfully added car: " + car.ToString());
             } catch (Exception e) {
                 logger.LogError("Failed to add car", e);
+                return StatusCode(500, "Internal Server Error. Failed to add car. Check logs for more information.");
             }
         }
 
         [HttpDelete("/removeCar/{id}")]
-        public async void Delete(int id)
+        public async Task<ActionResult> DeleteCar(string id)
         {
-            await cosmosService.RemoveCar(id);
+            try
+            {
+                await cosmosService.RemoveCar(id).ConfigureAwait(false);
+                return Ok("Successfully removed car with id: " + id);
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Failed to remove car", e);
+                return StatusCode(500, "Internal Server Error. Failed to remove car. Check logs for more information.");
+            }
         }
     }
 }
