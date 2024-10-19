@@ -14,7 +14,7 @@ namespace Cars.Providers
         public CarProvider(ILogger<CarProvider> logger)
         {
             this.logger = logger;
-            CosmosConnection cosmosConnection = new CosmosConnection(new CosmosContainerOptions(), this.logger);
+            CosmosConnection cosmosConnection = new CosmosConnection(new CosmosAccountOptions(), new CosmosContainerOptions(), this.logger);
             this.container = cosmosConnection.GetContainer();
         }
 

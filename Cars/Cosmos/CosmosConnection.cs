@@ -6,20 +6,20 @@ namespace Cars.Cosmos
     public class CosmosConnection
     {
         public CosmosClient? cosmosClient;
-
+        public readonly CosmosAccountOptions cosmosAccountOptions;
         public readonly CosmosContainerOptions cosmosContainerOptions;
-
         public readonly ILogger logger;
 
-        public CosmosConnection(CosmosContainerOptions cosmosContainerOptions, ILogger logger)
+        public CosmosConnection(CosmosAccountOptions cosmosAccountOptions, CosmosContainerOptions cosmosContainerOptions, ILogger logger)
         {
+            this.cosmosAccountOptions = cosmosAccountOptions;
             this.cosmosContainerOptions = cosmosContainerOptions;
             this.logger = logger;
         }
 
         public Container GetContainer()
         {
-            cosmosClient = new CosmosClient("AccountEndpoint=[COSMOS_ACOUNT_ENDPOINT];AccountKey=[COSMOS_ACCOUNT_KEY];");
+            cosmosClient = new CosmosClient($"AccountEndpoint={cosmosAccountOptions.AccountEndpoint};AccountKey={cosmosAccountOptions.AccountKey};");
             
             logger.LogInformation($"Cosmos DB client initialized for endpoint: {this.cosmosClient.Endpoint.AbsoluteUri}");
 
