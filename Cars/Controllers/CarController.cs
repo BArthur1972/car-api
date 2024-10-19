@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Cars.Services;
+using Cars.Providers;
 using Cars.Models.Resources;
 
 namespace Cars.Controllers
@@ -10,12 +10,12 @@ namespace Cars.Controllers
     {
         private readonly ILogger<CarController> logger;
 
-        private readonly CosmosService cosmosService;
+        private readonly CarProvider carProvider;
 
-        public CarController(ILogger<CarController> logger, CosmosService cosmosService)
+        public CarController(ILogger<CarController> logger, CarProvider carProvider)
         {
             this.logger = logger;
-            this.cosmosService = cosmosService;
+            this.carProvider = carProvider;
         }
 
         [HttpGet]
@@ -24,7 +24,7 @@ namespace Cars.Controllers
         {
             try
             {
-                IEnumerable<CarResponsePayload> cars = await cosmosService.GetCars().ConfigureAwait(false);
+                IEnumerable<CarResponsePayload> cars = await carProvider.GetCars().ConfigureAwait(false);
                 logger.LogInformation("Cars obtained: " + cars.Count() + " cars");
                 return Ok(cars);
             }
@@ -40,7 +40,7 @@ namespace Cars.Controllers
         {
             try
             {
-                CarResponsePayload car = await cosmosService.GetCar(id).ConfigureAwait(false);
+                CarResponsePayload car = await carProvider.GetCar(id).ConfigureAwait(false);
                 logger.LogInformation("Car obtained: " + car.ToString());
                 return Ok(car);
             }
@@ -56,7 +56,7 @@ namespace Cars.Controllers
         public async Task<ActionResult> AddCar([FromBody] CarRequestPayload car)
         {
             try {
-                await cosmosService.AddCar(car).ConfigureAwait(false);
+                await carProvider.AddCar(car).ConfigureAwait(false);
                 return Ok("Successfully added car: " + car.ToString());
             } catch (Exception e) {
                 logger.LogError("Failed to add car", e);
@@ -69,7 +69,7 @@ namespace Cars.Controllers
         {
             try
             {
-                await cosmosService.RemoveCar(id).ConfigureAwait(false);
+                await carProvider.RemoveCar(id).ConfigureAwait(false);
                 return Ok("Successfully removed car with id: " + id);
             }
             catch (Exception e)

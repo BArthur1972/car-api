@@ -1,21 +1,21 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Cars.Models;
 using Cars.Models.Resources;
+using Cars.Cosmos;
+using Cars.Cosmos.Options;
 
-namespace Cars.Services
+namespace Cars.Providers
 {
-    public class CosmosService
+    public class CarProvider
     {
-        private readonly CosmosClient cosmosClient;
         private readonly Container container;
-        private readonly ILogger<CosmosService> logger;
+        private readonly ILogger<CarProvider> logger;
 
-        public CosmosService(ILogger<CosmosService> logger)
+        public CarProvider(ILogger<CarProvider> logger)
         {
-            // TODO: Use Azure Key Vault to store the Cosmos DB account key and endpoint and retrieve them from there
-            cosmosClient = new CosmosClient("AccountEndpoint=[COSMOS_ACOUNT_ENDPOINT];AccountKey=[COSMOS_ACCOUNT_KEY];");
-            container = cosmosClient.GetContainer("carsapp", "car");
             this.logger = logger;
+            CosmosConnection cosmosConnection = new CosmosConnection(new CosmosContainerOptions(), this.logger);
+            this.container = cosmosConnection.GetContainer();
         }
 
         public async Task AddCar(CarRequestPayload car)
