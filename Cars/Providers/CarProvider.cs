@@ -1,20 +1,26 @@
 ﻿using Microsoft.Azure.Cosmos;
-using Cars.Models;
-using Cars.Models.Resources;
 using Cars.Cosmos;
 using Cars.Cosmos.Options;
+using Cars.ApiCommon.Models.Resources;
+using Cars.ApiCommon.Models;
+using Cars.ApiCommon.Exceptions;
+using Microsoft.Extensions.Options;
 
 namespace Cars.Providers
 {
     public class CarProvider
     {
+        private readonly CosmosAccountOptions cosmosAccountOptions;
+        private readonly CosmosContainerOptions cosmosContainerOptions;
         private readonly Container container;
         private readonly ILogger<CarProvider> logger;
 
-        public CarProvider(ILogger<CarProvider> logger)
+        public CarProvider(IOptions<CosmosOptions> cosmosOptions, ILogger<CarProvider> logger)
         {
+            this.cosmosAccountOptions = cosmosOptions.Value.AccountOptions;
+            this.cosmosContainerOptions = cosmosOptions.Value.ContainerOptions;
             this.logger = logger;
-            CosmosConnection cosmosConnection = new CosmosConnection(new CosmosAccountOptions(), new CosmosContainerOptions(), this.logger);
+            CosmosConnection cosmosConnection = new CosmosConnection(cosmosAccountOptions, cosmosContainerOptions, this.logger);
             this.container = cosmosConnection.GetContainer();
         }
 
@@ -39,6 +45,13 @@ namespace Cars.Providers
             {
                 var query = container.GetItemQueryIterator<CarResponsePayload>("SELECT * FROM c");
                 var response = await query.ReadNextAsync();
+
+                if (response.Count == 0)
+                {
+                    logger.LogError("No cars found");
+                    throw new DataNotFoundException("No cars found");
+                }
+
                 logger.LogDebug("Cars obtained: " + response.Count + " cars");
                 cars.AddRange(response);
             }
@@ -49,7 +62,7 @@ namespace Cars.Providers
             return cars;
         }
 
-        public async Task<CarResponsePayload> GetCar(string id)
+        public async Task<CarResponsePayload?> GetCar(string id)
         {
             try {
             QueryDefinition queryText = new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
@@ -58,6 +71,12 @@ namespace Cars.Providers
             var response = await query.ReadNextAsync();
 
             Console.WriteLine("Car found");
+
+            if (response.Count == 0)
+            {
+                logger.LogError("Car not found");
+                throw new DataNotFoundException("Car not found");
+            }
             return response.FirstOrDefault();
             }
             catch (CosmosException e)

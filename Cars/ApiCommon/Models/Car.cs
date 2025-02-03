@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Newtonsoft.Json;
 
-namespace Cars.Models
+namespace Cars.ApiCommon.Models
 {
     public class Car
     {

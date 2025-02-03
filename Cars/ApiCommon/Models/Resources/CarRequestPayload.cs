@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Cars.Models.Resources
+namespace Cars.ApiCommon.Models.Resources
 {
     // This class will be used to deserialize the request payload
     public record CarRequestPayload

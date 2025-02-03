@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Cars.Models.Resources
+namespace Cars.ApiCommon.Models.Resources
 {
     // This class will be used to deserialize the response payload
     public record CarResponsePayload

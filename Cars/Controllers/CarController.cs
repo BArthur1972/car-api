@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Cars.Providers;
-using Cars.Models.Resources;
-
+using Cars.ApiCommon.Models.Resources;
+using Cars.ApiCommon.Exceptions;
 namespace Cars.Controllers
 {
     [ApiController]
@@ -30,7 +30,7 @@ namespace Cars.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to get cars", e);
+                logger.LogError(e, "Failed to get cars");
                 return StatusCode(500, "Internal Server Error. Failed to get cars. Check logs for more information.");
             }
         }
@@ -40,13 +40,18 @@ namespace Cars.Controllers
         {
             try
             {
-                CarResponsePayload car = await carProvider.GetCar(id).ConfigureAwait(false);
+                CarResponsePayload? car = await carProvider.GetCar(id).ConfigureAwait(false);
+                if (car == null)
+                {
+                    logger.LogError("Car with id: " + id + " not found.");
+                    throw new DataNotFoundException("Car not found");
+                }
                 logger.LogInformation("Car obtained: " + car.ToString());
                 return Ok(car);
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to get car", e);
+                logger.LogError(e, "Failed to get car");
                 return StatusCode(500, "Internal Server Error. Failed to get car. Check logs for more information.");
             }
         }
@@ -59,7 +64,7 @@ namespace Cars.Controllers
                 await carProvider.AddCar(car).ConfigureAwait(false);
                 return Ok("Successfully added car: " + car.ToString());
             } catch (Exception e) {
-                logger.LogError("Failed to add car", e);
+                logger.LogError(e, "Failed to add car");
                 return StatusCode(500, "Internal Server Error. Failed to add car. Check logs for more information.");
             }
         }
@@ -74,7 +79,7 @@ namespace Cars.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to remove car", e);
+                logger.LogError(e, "Failed to remove car");
                 return StatusCode(500, "Internal Server Error. Failed to remove car. Check logs for more information.");
             }
         }

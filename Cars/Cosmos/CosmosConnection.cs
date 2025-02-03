@@ -20,12 +20,20 @@ namespace Cars.Cosmos
         public Container GetContainer()
         {
             cosmosClient = new CosmosClient($"AccountEndpoint={cosmosAccountOptions.AccountEndpoint};AccountKey={cosmosAccountOptions.AccountKey};");
-            
-            logger.LogInformation($"Cosmos DB client initialized for endpoint: {this.cosmosClient.Endpoint.AbsoluteUri}");
 
-            var container = this.cosmosClient.GetContainer(cosmosContainerOptions.DatabaseId, cosmosContainerOptions.ContainerId);
+            logger.LogInformation($"Cosmos DB client initialized for endpoint: {cosmosClient.Endpoint.AbsoluteUri}");
 
-            logger.LogInformation($"Cosmos DB container initialized for database: {cosmosContainerOptions.DatabaseId} and container: {cosmosContainerOptions.ContainerId}");
+            Container container;
+            try
+            {
+                container = cosmosClient.GetContainer(cosmosContainerOptions.DatabaseId, cosmosContainerOptions.ContainerId);
+                logger.LogInformation($"Cosmos DB container initialized for database: {cosmosContainerOptions.DatabaseId} and container: {cosmosContainerOptions.ContainerId}");
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"Failed to initialize Cosmos DB container: {e.Message}");
+                throw;
+            }
 
             return container;
         }
