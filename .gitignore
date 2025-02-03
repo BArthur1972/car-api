@@ -26,3 +26,6 @@ bld/
 .vs/
 .vscode/
 .DS_Store
+
+# Exclude development appssettings file
+./Cars/appsettings.Development.json
