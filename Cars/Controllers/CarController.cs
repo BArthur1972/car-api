@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Cars.Providers;
+using Cars.Management;
 using Cars.ApiCommon.Models.Resources;
 using Cars.ApiCommon.Exceptions;
 namespace Cars.Controllers
@@ -10,9 +10,9 @@ namespace Cars.Controllers
     {
         private readonly ILogger<CarController> logger;
 
-        private readonly CarProvider carProvider;
+        private readonly CarManagementProvider carProvider;
 
-        public CarController(ILogger<CarController> logger, CarProvider carProvider)
+        public CarController(ILogger<CarController> logger, CarManagementProvider carProvider)
         {
             this.logger = logger;
             this.carProvider = carProvider;
@@ -48,6 +48,10 @@ namespace Cars.Controllers
                 }
                 logger.LogInformation("Car obtained: " + car.ToString());
                 return Ok(car);
+            }
+            catch (DataNotFoundException e)
+            {
+                return NotFound("Car not found." + e.Message);
             }
             catch (Exception e)
             {

@@ -1,5 +1,6 @@
 using Cars.Cosmos.Options;
-using Cars.Providers;
+using Cars.DataAccess;
+using Cars.Management;
 using Microsoft.Extensions.Options;
 
 namespace Cars
@@ -13,13 +14,8 @@ namespace Cars
 
             services.AddOptionsWithValidation<CosmosOptions>(configuration.GetSection(CosmosOptions.SectionKey));
 
-            Console.WriteLine("Registering services...");
-            Console.WriteLine("Account Endpoint: " + configuration.GetSection(CosmosOptions.SectionKey).Get<CosmosOptions>()?.AccountOptions.AccountEndpoint.ToString());
-            Console.WriteLine("Account Key: " + configuration.GetSection(CosmosOptions.SectionKey).Get<CosmosOptions>()?.AccountOptions.AccountKey.ToString());
-            Console.WriteLine("Database ID: " + configuration.GetSection(CosmosOptions.SectionKey).Get<CosmosOptions>()?.ContainerOptions.DatabaseId.ToString());
-            Console.WriteLine("Container ID: " + configuration.GetSection(CosmosOptions.SectionKey).Get<CosmosOptions>()?.ContainerOptions.ContainerId.ToString());
-
-            services.AddSingleton<CarProvider>();
+            services.AddSingleton<ICarDataProvider, CarDataProvider>();
+            services.AddSingleton<CarManagementProvider>();
         }
 
         public static OptionsBuilder<TOptions> AddOptionsWithValidation<TOptions>(
