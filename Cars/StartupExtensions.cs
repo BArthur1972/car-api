@@ -1,4 +1,4 @@
-using Cars.Cosmos.Options;
+using Cars.ApiCommon.Cosmos.Options;
 using Cars.DataAccess;
 using Cars.Management;
 using Microsoft.Extensions.Options;

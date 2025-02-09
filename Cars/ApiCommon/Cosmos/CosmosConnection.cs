@@ -1,7 +1,7 @@
-using Cars.Cosmos.Options;
+using Cars.ApiCommon.Cosmos.Options;
 using Microsoft.Azure.Cosmos;
 
-namespace Cars.Cosmos
+namespace Cars.ApiCommon.Cosmos
 {
     public class CosmosConnection
     {

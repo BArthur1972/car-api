@@ -1,4 +1,4 @@
-namespace Cars.Cosmos.Options
+namespace Cars.ApiCommon.Cosmos.Options
 {
     public class CosmosContainerOptions
     {

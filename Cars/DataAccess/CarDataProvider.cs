@@ -1,8 +1,8 @@
+using Cars.ApiCommon.Cosmos;
+using Cars.ApiCommon.Cosmos.Options;
 using Cars.ApiCommon.Exceptions;
 using Cars.ApiCommon.Models;
 using Cars.ApiCommon.Models.Resources;
-using Cars.Cosmos;
-using Cars.Cosmos.Options;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 
@@ -12,7 +12,7 @@ namespace Cars.DataAccess
     {
         private readonly CosmosAccountOptions cosmosAccountOptions;
         private readonly CosmosContainerOptions cosmosContainerOptions;
-        private readonly Container container;
+        private readonly Container cosmosClient;
         private readonly ILogger<CarDataProvider> logger;
         
         public CarDataProvider(IOptions<CosmosOptions> cosmosOptions, ILogger<CarDataProvider> logger)
@@ -21,12 +21,12 @@ namespace Cars.DataAccess
             this.cosmosContainerOptions = cosmosOptions.Value.ContainerOptions;
             this.logger = logger;
             CosmosConnection cosmosConnection = new CosmosConnection(cosmosAccountOptions, cosmosContainerOptions, this.logger);
-            this.container = cosmosConnection.GetContainer();
+            this.cosmosClient = cosmosConnection.GetContainer();
         }
 
         public async Task AddCarAsync(Car car)
         {
-            await container.UpsertItemAsync<Car>(car);
+            await cosmosClient.UpsertItemAsync<Car>(car);
             logger.LogInformation("Added car: " + car.ToString());
         }
 
@@ -36,7 +36,7 @@ namespace Cars.DataAccess
             {
                 QueryDefinition queryText = new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
                 .WithParameter("@id", id);
-                var query = container.GetItemQueryIterator<CarResponsePayload>(queryText);
+                var query = cosmosClient.GetItemQueryIterator<CarResponsePayload>(queryText);
                 var response = await query.ReadNextAsync();
 
                 if (response.Count == 0)
@@ -60,7 +60,7 @@ namespace Cars.DataAccess
             IEnumerable<CarResponsePayload>? cars = null;
             try
             {
-                var query = container.GetItemQueryIterator<CarResponsePayload>("SELECT * FROM c");
+                var query = cosmosClient.GetItemQueryIterator<CarResponsePayload>("SELECT * FROM c");
                 var response = await query.ReadNextAsync();
 
                 if (response.Count == 0)
@@ -85,7 +85,7 @@ namespace Cars.DataAccess
         {
             try
             {
-                await container.DeleteItemAsync<Car>(id, new PartitionKey(id));
+                await cosmosClient.DeleteItemAsync<Car>(id, new PartitionKey(id));
                 logger.LogInformation("Deleted car with ID: " + id);
             }
             catch (CosmosException e)
