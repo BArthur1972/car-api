@@ -10,9 +10,9 @@ namespace Cars.Controllers
     {
         private readonly ILogger<CarController> logger;
 
-        private readonly CarManagementProvider carProvider;
+        private readonly ICarManagementProvider carProvider;
 
-        public CarController(ILogger<CarController> logger, CarManagementProvider carProvider)
+        public CarController(ILogger<CarController> logger, ICarManagementProvider carProvider)
         {
             this.logger = logger;
             this.carProvider = carProvider;

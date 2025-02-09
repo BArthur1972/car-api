@@ -15,7 +15,7 @@ namespace Cars
             services.AddOptionsWithValidation<CosmosOptions>(configuration.GetSection(CosmosOptions.SectionKey));
 
             services.AddSingleton<ICarDataProvider, CarDataProvider>();
-            services.AddSingleton<CarManagementProvider>();
+            services.AddSingleton<ICarManagementProvider, CarManagementProvider>();
         }
 
         public static OptionsBuilder<TOptions> AddOptionsWithValidation<TOptions>(

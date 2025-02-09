@@ -5,7 +5,7 @@ using Cars.DataAccess;
 
 namespace Cars.Management
 {
-    public class CarManagementProvider
+    public class CarManagementProvider : ICarManagementProvider
     {
         private readonly ICarDataProvider carDataProvider;
         private readonly ILogger<CarManagementProvider> logger;
