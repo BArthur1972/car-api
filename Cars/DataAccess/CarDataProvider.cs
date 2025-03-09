@@ -4,6 +4,7 @@ using Cars.ApiCommon.Exceptions;
 using Cars.ApiCommon.Models;
 using Cars.ApiCommon.Models.Resources;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Options;
 
 namespace Cars.DataAccess
@@ -26,7 +27,7 @@ namespace Cars.DataAccess
 
         public async Task AddCarAsync(Car car)
         {
-            await cosmosClient.UpsertItemAsync<Car>(car);
+            await cosmosClient.UpsertItemAsync<Car>(car, new PartitionKey(car.Id));
             logger.LogInformation("Added car: " + car.ToString());
         }
 
@@ -34,19 +35,16 @@ namespace Cars.DataAccess
         {
             try
             {
-                QueryDefinition queryText = new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
-                .WithParameter("@id", id);
-                var query = cosmosClient.GetItemQueryIterator<CarResponsePayload>(queryText);
-                var response = await query.ReadNextAsync();
-
-                if (response.Count == 0)
-                {
-                    logger.LogError("Car not found");
-                    throw new DataNotFoundException("Car not found");
-                }
-
-                logger.LogInformation("Car obtained: " + response.First().ToString());
-                return response.First();
+                ItemResponse<CarResponsePayload> response =
+                    await cosmosClient.ReadItemAsync<CarResponsePayload>(id, new PartitionKey(id));
+                
+                logger.LogInformation("Car obtained: " + response.Resource.ToString());
+                return response.Resource;
+            }
+            catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                logger.LogError("Car not found");
+                throw new DataNotFoundException("Car not found");
             }
             catch (CosmosException e)
             {
@@ -57,28 +55,30 @@ namespace Cars.DataAccess
 
         public async Task<IEnumerable<CarResponsePayload>> GetCarsAsync()
         {
-            IEnumerable<CarResponsePayload>? cars = null;
+            List<CarResponsePayload>? cars = [];
             try
             {
                 var query = cosmosClient.GetItemQueryIterator<CarResponsePayload>("SELECT * FROM c");
-                var response = await query.ReadNextAsync();
+                while (query.HasMoreResults)
+                {
+                    var response = await query.ReadNextAsync();
+                    cars.AddRange(response);
+                }
 
-                if (response.Count == 0)
+                if (cars.Count == 0)
                 {
                     logger.LogError("No cars found");
                     throw new DataNotFoundException("No cars found");
                 }
 
-                logger.LogDebug("Cars obtained: " + response.Count + " cars");
-                cars = response.ToList();
+                logger.LogDebug("Cars obtained: " + cars.Count + " cars");
+                return cars;
             }
             catch (CosmosException e)
             {
                 logger.LogError("Failed to get cars: " + e);
                 throw;
             }
-
-            return cars;
         }
 
         public async Task RemoveCarAsync(string id)

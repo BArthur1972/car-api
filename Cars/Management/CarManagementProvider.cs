@@ -25,7 +25,7 @@ namespace Cars.Management
                 await carDataProvider.AddCarAsync(newCar);
                 logger.LogInformation("Added car: " + newCar.ToString());
             }
-            catch (CosmosException e)
+            catch (Exception e)
             {
                 logger.LogError("Failed to add car: " + e.Message);
                 throw;
@@ -41,7 +41,7 @@ namespace Cars.Management
                 logger.LogInformation("Cars obtained: " + response.Count() + " cars");
                 return response;
             }
-            catch (CosmosException e)
+            catch (Exception e)
             {
                 logger.LogError("Failed to get cars: " + e);
                 throw;
@@ -57,7 +57,7 @@ namespace Cars.Management
                 logger.LogInformation("Car obtained: " + response.ToString());
                 car = response;
             }
-            catch (CosmosException e)
+            catch (Exception e)
             {
                 logger.LogError("Failed to get car: " + e);
                 throw;
@@ -73,7 +73,7 @@ namespace Cars.Management
                 await carDataProvider.RemoveCarAsync(id);
                 logger.LogInformation("Removed car: " + id);
             }
-            catch (CosmosException e)
+            catch (Exception e)
             {
                 logger.LogError("Failed to remove car: " + e);
                 throw;

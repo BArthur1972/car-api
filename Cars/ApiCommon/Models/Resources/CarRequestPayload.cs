@@ -19,15 +19,7 @@ namespace Cars.ApiCommon.Models.Resources
 
         [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
-
-        // Default constructor for serialization
-        // public CarRequestPayload()
-        // {
-        //     Make = string.Empty;
-        //     Model = string.Empty;
-        //     Year = 0;
-        // }
-
+        
         public CarRequestPayload(string make, string model, int year, string? imageUrl = null)
         {
             Make = make;

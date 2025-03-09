@@ -19,14 +19,6 @@ namespace Cars.ApiCommon.Models
         [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
 
-        public Car()
-        {
-            Id = string.Empty;
-            Make = string.Empty;
-            Model = string.Empty;
-            Year = 0;
-        }
-
         public Car(string make, string model, int year, string? imageUrl = null)
         {
             Id = Guid.NewGuid().ToString();

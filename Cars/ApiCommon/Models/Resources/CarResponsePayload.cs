@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Cars.ApiCommon.Models.Resources
 {
     // This class will be used to deserialize the response payload
-    public record CarResponsePayload
+    public class CarResponsePayload
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
@@ -19,14 +19,6 @@ namespace Cars.ApiCommon.Models.Resources
 
         [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
-
-        // public CarResponsePayload()
-        // {
-        //     Id = string.Empty;
-        //     Make = string.Empty;
-        //     Model = string.Empty;
-        //     Year = 0;
-        // }
 
         public CarResponsePayload(string id, string make, string model, int year, string? imageUrl = null)
         {
