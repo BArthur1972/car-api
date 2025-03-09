@@ -10,12 +10,12 @@ namespace Cars.Controllers
     {
         private readonly ILogger<CarController> logger;
 
-        private readonly ICarManagementProvider carProvider;
+        private readonly ICarManagementProvider carManagementProvider;
 
         public CarController(ILogger<CarController> logger, ICarManagementProvider carProvider)
         {
             this.logger = logger;
-            this.carProvider = carProvider;
+            this.carManagementProvider = carProvider;
         }
 
         [HttpGet]
@@ -24,7 +24,7 @@ namespace Cars.Controllers
         {
             try
             {
-                IEnumerable<CarResponsePayload> cars = await carProvider.GetCars().ConfigureAwait(false);
+                IEnumerable<CarResponsePayload> cars = await carManagementProvider.GetCars().ConfigureAwait(false);
                 logger.LogInformation("Cars obtained: " + cars.Count() + " cars");
                 return Ok(cars);
             }
@@ -40,7 +40,7 @@ namespace Cars.Controllers
         {
             try
             {
-                CarResponsePayload? car = await carProvider.GetCar(id).ConfigureAwait(false);
+                CarResponsePayload? car = await carManagementProvider.GetCar(id).ConfigureAwait(false);
                 if (car == null)
                 {
                     logger.LogError("Car with id: " + id + " not found.");
@@ -65,7 +65,7 @@ namespace Cars.Controllers
         public async Task<ActionResult> AddCar([FromBody] CarRequestPayload car)
         {
             try {
-                await carProvider.AddCar(car).ConfigureAwait(false);
+                await carManagementProvider.AddCar(car).ConfigureAwait(false);
                 return Ok("Successfully added car: " + car.ToString());
             } catch (Exception e) {
                 logger.LogError(e, "Failed to add car");
@@ -78,7 +78,7 @@ namespace Cars.Controllers
         {
             try
             {
-                await carProvider.RemoveCar(id).ConfigureAwait(false);
+                await carManagementProvider.RemoveCar(id).ConfigureAwait(false);
                 return Ok("Successfully removed car with id: " + id);
             }
             catch (Exception e)

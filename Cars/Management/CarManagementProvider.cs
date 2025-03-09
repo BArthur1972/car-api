@@ -2,6 +2,7 @@
 using Cars.ApiCommon.Models.Resources;
 using Cars.ApiCommon.Models;
 using Cars.DataAccess;
+using Cars.ApiCommon.Extensions;
 
 namespace Cars.Management
 {
@@ -16,11 +17,11 @@ namespace Cars.Management
             this.logger = logger;
         }
 
-        public async Task AddCar(CarRequestPayload car)
+        public async Task AddCar(CarRequestPayload carRequestPayload)
         {
             try
             {
-                Car newCar = new Car(car.Make, car.Model, car.ImageUrl);
+                Car newCar = carRequestPayload.ToCar();
                 await carDataProvider.AddCarAsync(newCar);
                 logger.LogInformation("Added car: " + newCar.ToString());
             }

@@ -1,6 +1,6 @@
-@Cars_HostAddress = http://localhost:5292
+@Cars_HostAddress = http://localhost:8080
 
-GET {{Cars_HostAddress}}/weatherforecast/
+GET {{Cars_HostAddress}}/getCars/
 Accept: application/json
 
 ###
