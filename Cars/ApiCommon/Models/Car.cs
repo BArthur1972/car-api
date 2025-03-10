@@ -1,22 +1,22 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Cars.ApiCommon.Models
 {
     public class Car
     {
-        [JsonPropertyName("id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonPropertyName("make")]
+        [JsonProperty("make")]
         public string Make { get; set; }
 
-        [JsonPropertyName("model")]
+        [JsonProperty("model")]
         public string Model { get; set; }
 
-        [JsonPropertyName("year")]
+        [JsonProperty("year")]
         public int Year { get; set; }
 
-        [JsonPropertyName("imageUrl")]
+        [JsonProperty("imageUrl")]
         public string? ImageUrl { get; set; }
 
         public Car(string make, string model, int year, string? imageUrl = null)

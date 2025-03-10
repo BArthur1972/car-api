@@ -1,30 +1,30 @@
-﻿using System.Text.Json.Serialization;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace Cars.ApiCommon.Models.Resources
 {
     public class CarRequestPayload
     {
         [Required]
-        [JsonPropertyName("make")]
+        [JsonProperty("make")]
         public string Make { get; set; }
 
         [Required]
-        [JsonPropertyName("model")]
+        [JsonProperty("model")]
         public string Model { get; set; }
 
         [Required]
-        [JsonPropertyName("year")]
+        [JsonProperty("year")]
         public int Year { get; set; }
 
-        [JsonPropertyName("imageUrl")]
+        [JsonProperty("imageUrl")]
         public string? ImageUrl { get; set; }
         
-        public CarRequestPayload(string make, string model, int year, string? imageUrl = null)
+        public CarRequestPayload(string make, string model, int year, string? imageUrl)
         {
             Make = make;
             Model = model;
-            Year = year;
+            Year = year;     
             ImageUrl = imageUrl;
         }
 

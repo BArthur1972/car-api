@@ -28,6 +28,10 @@ namespace Cars.Controllers
                 logger.LogInformation("Cars obtained: " + cars.Count() + " cars");
                 return Ok(cars);
             }
+            catch (DataNotFoundException e)
+            {
+                return NotFound("Cars not found." + e.Message);
+            }
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to get cars");
@@ -51,7 +55,7 @@ namespace Cars.Controllers
             }
             catch (DataNotFoundException e)
             {
-                return NotFound("Car not found." + e.Message);
+                return NotFound(e);
             }
             catch (Exception e)
             {

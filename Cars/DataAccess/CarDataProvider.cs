@@ -4,7 +4,6 @@ using Cars.ApiCommon.Exceptions;
 using Cars.ApiCommon.Models;
 using Cars.ApiCommon.Models.Resources;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Options;
 
 namespace Cars.DataAccess
@@ -27,8 +26,22 @@ namespace Cars.DataAccess
 
         public async Task AddCarAsync(Car car)
         {
-            await cosmosClient.UpsertItemAsync<Car>(car, new PartitionKey(car.Id));
-            logger.LogInformation("Added car: " + car.ToString());
+            try
+            {
+                await cosmosClient.UpsertItemAsync<Car>(car, new PartitionKey(car.Id));
+                logger.LogInformation("Added car: " + car.ToString());
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {   
+                logger.LogError($"Car causing error: Id={car.Id}, Make={car.Make}, Model={car.Model} Year={car.Year}");
+                
+                throw new ArgumentException($"The car is invalid: {ex.Message}", ex);
+            }
+            catch (CosmosException e)
+            {
+                logger.LogError("Failed to add car: " + e.Message);
+                throw;
+            }
         }
 
         public async Task<CarResponsePayload> GetCarAsync(string id)
