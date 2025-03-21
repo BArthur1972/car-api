@@ -9,4 +9,5 @@ public interface ICarManagementProvider
     Task<IEnumerable<CarResponsePayload>> GetCars();
     Task<CarResponsePayload?> GetCar(string id);
     Task RemoveCar(string id);
+    Task UpdateCar(string id, CarUpdatePayload car);
 }

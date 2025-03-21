@@ -9,5 +9,6 @@ namespace Cars.DataAccess
         Task<CarResponsePayload> GetCarAsync(string id);
         Task AddCarAsync(Car car);
         Task RemoveCarAsync(string id);
+        Task UpdateCarAsync(string id, CarUpdatePayload updatePayload);
     }
 }

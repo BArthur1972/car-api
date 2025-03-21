@@ -79,5 +79,19 @@ namespace Cars.Management
                 throw;
             }
         }
+
+        public async Task UpdateCar(string id, CarUpdatePayload updatePayload)
+        {
+            try
+            {
+                await carDataProvider.UpdateCarAsync(id, updatePayload);
+                logger.LogInformation($"Updated car with ID: {id}, Changes: {updatePayload.ToString()}");
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"Failed to update car with ID: {id}: {e.Message}");
+                throw;
+            }
+        }
     }
 }

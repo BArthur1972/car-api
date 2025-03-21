@@ -107,5 +107,79 @@ namespace Cars.DataAccess
                 throw;
             }
         }
+        
+        public async Task UpdateCarAsync(string id, CarUpdatePayload updatePayload)
+        {
+            try
+            {
+                // Create patch operations
+                var patchOperations = CreatePatchOperations(updatePayload);
+                
+                // If no properties to update, return early
+                if (!patchOperations.Any())
+                {
+                    logger.LogInformation($"No properties to update for car with ID: {id}");
+                    return;
+                }
+                
+                // Create a transactional batch with all patch operations
+                var batch = cosmosClient.CreateTransactionalBatch(new PartitionKey(id));
+                batch.PatchItem(id, [.. patchOperations]);
+                
+                // Execute the batch transaction
+                var response = await batch.ExecuteAsync();
+                
+                // Check if the batch operation was successful
+                if (!response.IsSuccessStatusCode)
+                {
+                    logger.LogError($"Failed to update car with ID: {id}, Status: {response.StatusCode}");
+                    throw new Exception($"Failed to update car with ID: {id}. Status: {response.StatusCode}, Message: {response.ErrorMessage}, FailedRequests: {response.Diagnostics.GetFailedRequestCount()}, Exception: {response.Diagnostics.GetQueryMetrics()}");
+                }
+                
+                logger.LogInformation($"Successfully updated car with ID: {id}");
+            }
+            catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                logger.LogError($"Car not found with ID: {id}");
+                throw new DataNotFoundException($"Car with ID {id} not found");
+            }
+            catch (CosmosException e)
+            {
+                logger.LogError($"Failed to update car: {e.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates a list of patch operations based on the properties in the update payload
+        /// </summary>
+        private static List<PatchOperation> CreatePatchOperations(CarUpdatePayload updatePayload)
+        {
+            var patchOperations = new List<PatchOperation>();
+            
+            // Add patch operations for each property that needs to be updated
+            if (updatePayload.Make != null)
+            {
+                patchOperations.Add(PatchOperation.Set("/make", updatePayload.Make));
+            }
+            
+            if (updatePayload.Model != null)
+            {
+                patchOperations.Add(PatchOperation.Set("/model", updatePayload.Model));
+            }
+            
+            if (updatePayload.Year != null)
+            {
+                patchOperations.Add(PatchOperation.Set("/year", updatePayload.Year));
+            }
+            
+            // For imageUrl, we need to handle it explicitly
+            if (updatePayload.GetType().GetProperty("ImageUrl")?.GetValue(updatePayload) != null)
+            {
+                patchOperations.Add(PatchOperation.Set("/imageUrl", updatePayload.ImageUrl));
+            }
+            
+            return patchOperations;
+        }
     }
 }

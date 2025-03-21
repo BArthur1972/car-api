@@ -9,9 +9,7 @@ namespace Cars.Controllers
     public class CarController : ControllerBase
     {
         private readonly ILogger<CarController> logger;
-
         private readonly ICarManagementProvider carManagementProvider;
-
         public CarController(ILogger<CarController> logger, ICarManagementProvider carProvider)
         {
             this.logger = logger;
@@ -89,6 +87,34 @@ namespace Cars.Controllers
             {
                 logger.LogError(e, "Failed to remove car");
                 return StatusCode(500, "Internal Server Error. Failed to remove car. Check logs for more information.");
+            }
+        }
+
+        [HttpPatch("/updateCar/{id}")]
+        public async Task<ActionResult> UpdateCar(string id, [FromBody] CarUpdatePayload updatePayload)
+        {
+            try
+            {
+                // Validate that at least one property is being updated
+                var properties = typeof(CarUpdatePayload).GetProperties();
+                bool hasUpdates = properties.Any(p => p.GetValue(updatePayload) != null);
+                
+                if (!hasUpdates)
+                {
+                    return BadRequest("Update payload must contain at least one property to update");
+                }
+                
+                await carManagementProvider.UpdateCar(id, updatePayload).ConfigureAwait(false);
+                return Ok($"Successfully updated car with id: {id}");
+            }
+            catch (DataNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, $"Failed to update car with id: {id}");
+                return StatusCode(500, "Internal Server Error. Failed to update car. Check logs for more information.");
             }
         }
     }
