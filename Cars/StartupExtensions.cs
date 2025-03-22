@@ -13,7 +13,6 @@ namespace Cars
             ConfigurationManager configuration = builder.Configuration;
 
             services.AddOptionsWithValidation<CosmosOptions>(configuration.GetSection(CosmosOptions.SectionKey));
-
             services.AddSingleton<ICarDataProvider, CarDataProvider>();
             services.AddSingleton<ICarManagementProvider, CarManagementProvider>();
         }

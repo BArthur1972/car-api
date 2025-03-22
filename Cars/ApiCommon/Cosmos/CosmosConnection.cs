@@ -1,3 +1,5 @@
+using Azure.Core;
+using Azure.Identity;
 using Cars.ApiCommon.Cosmos.Options;
 using Microsoft.Azure.Cosmos;
 
@@ -19,9 +21,18 @@ namespace Cars.ApiCommon.Cosmos
 
         public Container GetContainer()
         {
-            cosmosClient = new CosmosClient($"AccountEndpoint={cosmosAccountOptions.AccountEndpoint};AccountKey={cosmosAccountOptions.AccountKey};");
-
-            logger.LogInformation($"Cosmos DB client initialized for endpoint: {cosmosClient.Endpoint.AbsoluteUri}");
+            if (cosmosAccountOptions.UseMSICredentials)
+            {
+                // Use DefaultAzureCredential for token-based auth
+                TokenCredential tokenCredential = new DefaultAzureCredential();
+                cosmosClient = new CosmosClient(cosmosAccountOptions.AccountEndpoint, tokenCredential);
+                logger.LogInformation($"Cosmos DB client initialized with TokenCredential for endpoint: {cosmosClient.Endpoint.AbsoluteUri}");
+            }
+            else
+            {
+                cosmosClient = new CosmosClient($"AccountEndpoint={cosmosAccountOptions.AccountEndpoint};AccountKey={cosmosAccountOptions.AccountKey};");
+                logger.LogInformation($"Cosmos DB client initialized with AccountKey for endpoint: {cosmosClient.Endpoint.AbsoluteUri}");
+            }
 
             Container container;
             try
@@ -37,7 +48,5 @@ namespace Cars.ApiCommon.Cosmos
 
             return container;
         }
-
-
     }
 }
