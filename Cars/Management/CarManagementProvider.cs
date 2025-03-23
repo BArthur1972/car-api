@@ -1,6 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
-using Cars.ApiCommon.Models.Resources;
-using Cars.ApiCommon.Models;
+﻿using Cars.DataAccess.Entities;
+using Cars.DataAccess.Entities.Resources;
 using Cars.DataAccess;
 using Cars.ApiCommon.Extensions;
 
@@ -17,17 +16,18 @@ namespace Cars.Management
             this.logger = logger;
         }
 
-        public async Task AddCar(CarRequestPayload carRequestPayload)
+        public async Task<Car> AddCar(CarRequestPayload carRequestPayload)
         {
             try
             {
                 Car newCar = carRequestPayload.ToCar();
                 await carDataProvider.AddCarAsync(newCar);
                 logger.LogInformation("Added car: " + newCar.ToString());
+                return newCar;
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to add car: " + e.Message);
+                logger.LogError(e, "Failed to add car: " + e.Message);
                 throw;
             }
         }
@@ -43,7 +43,7 @@ namespace Cars.Management
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to get cars: " + e);
+                logger.LogError(e, "Failed to get cars: " + e.Message);
                 throw;
             }
         }
@@ -59,7 +59,7 @@ namespace Cars.Management
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to get car: " + e);
+                logger.LogError(e, "Failed to get car: " + e.Message);
                 throw;
             }
 
@@ -75,7 +75,7 @@ namespace Cars.Management
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to remove car: " + e);
+                logger.LogError(e, "Failed to remove car: " + e.Message);
                 throw;
             }
         }
@@ -89,7 +89,7 @@ namespace Cars.Management
             }
             catch (Exception e)
             {
-                logger.LogError($"Failed to update car with ID: {id}: {e.Message}");
+                logger.LogError(e, $"Failed to update car with ID: {id}: {e.Message}");
                 throw;
             }
         }

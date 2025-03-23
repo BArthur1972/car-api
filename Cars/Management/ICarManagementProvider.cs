@@ -1,11 +1,11 @@
-using System;
-using Cars.ApiCommon.Models.Resources;
+using Cars.DataAccess.Entities;
+using Cars.DataAccess.Entities.Resources;
 
 namespace Cars.Management;
 
 public interface ICarManagementProvider
 {
-    Task AddCar(CarRequestPayload car);
+    Task<Car> AddCar(CarRequestPayload car);
     Task<IEnumerable<CarResponsePayload>> GetCars();
     Task<CarResponsePayload?> GetCar(string id);
     Task RemoveCar(string id);

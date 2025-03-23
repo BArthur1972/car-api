@@ -1,8 +1,12 @@
-using Cars;
+using Cars.ApiCommon.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add cosmos options.
+builder.AddCosmosContainerOptions();
+builder.AddCosmosAccountOptions();
+
+// Add services to the DI container.
 builder.RegisterServices();
 
 builder.Services.AddControllers();

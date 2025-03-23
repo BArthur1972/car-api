@@ -1,20 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Cars.Management;
-using Cars.ApiCommon.Models.Resources;
+using Cars.DataAccess.Entities.Resources;
 using Cars.ApiCommon.Exceptions;
+using Cars.DataAccess.Entities;
 namespace Cars.Controllers
 {
     [ApiController]
     [Route("cars")]
-    public class CarController : ControllerBase
+    public class CarController(ILogger<CarController> logger, ICarManagementProvider carProvider) : ControllerBase
     {
-        private readonly ILogger<CarController> logger;
-        private readonly ICarManagementProvider carManagementProvider;
-        public CarController(ILogger<CarController> logger, ICarManagementProvider carProvider)
-        {
-            this.logger = logger;
-            this.carManagementProvider = carProvider;
-        }
+        private readonly ILogger<CarController> logger = logger;
+        private readonly ICarManagementProvider carManagementProvider = carProvider;
 
         [HttpGet]
         [Route("/getCars")]
@@ -28,7 +24,7 @@ namespace Cars.Controllers
             }
             catch (DataNotFoundException e)
             {
-                return NotFound("Cars not found." + e.Message);
+                return NotFound(e.Message);
             }
             catch (Exception e)
             {
@@ -53,7 +49,7 @@ namespace Cars.Controllers
             }
             catch (DataNotFoundException e)
             {
-                return NotFound(e);
+                return NotFound(e.Message);
             }
             catch (Exception e)
             {
@@ -67,8 +63,8 @@ namespace Cars.Controllers
         public async Task<ActionResult> AddCar([FromBody] CarRequestPayload car)
         {
             try {
-                await carManagementProvider.AddCar(car).ConfigureAwait(false);
-                return Ok("Successfully added car: " + car.ToString());
+                Car newCar = await carManagementProvider.AddCar(car).ConfigureAwait(false);
+                return Ok("Successfully added car: " + newCar.ToString());
             } catch (Exception e) {
                 logger.LogError(e, "Failed to add car");
                 return StatusCode(500, "Internal Server Error. Failed to add car. Check logs for more information.");

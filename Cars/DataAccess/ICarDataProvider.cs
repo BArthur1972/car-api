@@ -1,5 +1,5 @@
-using Cars.ApiCommon.Models;
-using Cars.ApiCommon.Models.Resources;
+using Cars.DataAccess.Entities;
+using Cars.DataAccess.Entities.Resources;
 
 namespace Cars.DataAccess
 {

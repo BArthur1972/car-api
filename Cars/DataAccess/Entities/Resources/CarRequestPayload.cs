@@ -1,36 +1,36 @@
+﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace Cars.ApiCommon.Models
+namespace Cars.DataAccess.Entities.Resources
 {
-    public class Car
+    public class CarRequestPayload
     {
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
+        [Required]
         [JsonProperty("make")]
         public string Make { get; set; }
 
+        [Required]
         [JsonProperty("model")]
         public string Model { get; set; }
 
+        [Required]
         [JsonProperty("year")]
         public int Year { get; set; }
 
         [JsonProperty("imageUrl")]
         public string? ImageUrl { get; set; }
-
-        public Car(string make, string model, int year, string? imageUrl = null)
+        
+        public CarRequestPayload(string make, string model, int year, string? imageUrl)
         {
-            Id = Guid.NewGuid().ToString();
             Make = make;
             Model = model;
-            Year = year;
+            Year = year;     
             ImageUrl = imageUrl;
         }
 
         public override string ToString()
         {
-            return $"Car with id: {Id}, is a {Year} {Make} {Model}.";
+            return $"Car is a {Year} {Make} {Model}.";
         }
     }
 }

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Cars.ApiCommon.Models.Resources
+namespace Cars.DataAccess.Entities.Resources
 {
     /// <summary>
     /// Payload model for partial updates to a car

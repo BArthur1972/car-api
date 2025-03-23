@@ -1,8 +1,8 @@
 using Cars.ApiCommon.Cosmos;
 using Cars.ApiCommon.Cosmos.Options;
 using Cars.ApiCommon.Exceptions;
-using Cars.ApiCommon.Models;
-using Cars.ApiCommon.Models.Resources;
+using Cars.DataAccess.Entities;
+using Cars.DataAccess.Entities.Resources;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 
@@ -12,34 +12,34 @@ namespace Cars.DataAccess
     {
         private readonly CosmosAccountOptions cosmosAccountOptions;
         private readonly CosmosContainerOptions cosmosContainerOptions;
-        private readonly Container cosmosClient;
+        private readonly Container container;
         private readonly ILogger<CarDataProvider> logger;
         
-        public CarDataProvider(IOptions<CosmosOptions> cosmosOptions, ILogger<CarDataProvider> logger)
+        public CarDataProvider(IOptions<CosmosAccountOptions> cosmosAccountOptions, IOptions<CosmosContainerOptions> cosmosContainerOptions, ILogger<CarDataProvider> logger)
         {
-            this.cosmosAccountOptions = cosmosOptions.Value.AccountOptions;
-            this.cosmosContainerOptions = cosmosOptions.Value.ContainerOptions;
+            this.cosmosAccountOptions = cosmosAccountOptions.Value;
+            this.cosmosContainerOptions = cosmosContainerOptions.Value;
             this.logger = logger;
-            CosmosConnection cosmosConnection = new CosmosConnection(cosmosAccountOptions, cosmosContainerOptions, this.logger);
-            this.cosmosClient = cosmosConnection.GetContainer();
+            CosmosFacade cosmosFacade = new(this.cosmosAccountOptions, this.cosmosContainerOptions, this.logger);
+            this.container = cosmosFacade.GetContainer();
         }
 
         public async Task AddCarAsync(Car car)
         {
             try
             {
-                await cosmosClient.UpsertItemAsync<Car>(car, new PartitionKey(car.Id));
+                await container.UpsertItemAsync<Car>(car, new PartitionKey(car.Id));
                 logger.LogInformation("Added car: " + car.ToString());
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {   
-                logger.LogError($"Car causing error: Id={car.Id}, Make={car.Make}, Model={car.Model} Year={car.Year}");
+                logger.LogError(ex, $"Car causing error: Id={car.Id}, Make={car.Make}, Model={car.Model} Year={car.Year}");
                 
                 throw new ArgumentException($"The car is invalid: {ex.Message}", ex);
             }
             catch (CosmosException e)
             {
-                logger.LogError("Failed to add car: " + e.Message);
+                logger.LogError(e, "Failed to add car: " + e.Message);
                 throw;
             }
         }
@@ -49,19 +49,19 @@ namespace Cars.DataAccess
             try
             {
                 ItemResponse<CarResponsePayload> response =
-                    await cosmosClient.ReadItemAsync<CarResponsePayload>(id, new PartitionKey(id));
+                    await container.ReadItemAsync<CarResponsePayload>(id, new PartitionKey(id));
                 
                 logger.LogInformation("Car obtained: " + response.Resource.ToString());
                 return response.Resource;
             }
             catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                logger.LogError("Car not found");
+                logger.LogError(e, "Car not found");
                 throw new DataNotFoundException("Car not found");
             }
-            catch (CosmosException e)
+            catch (Exception e)
             {
-                logger.LogError("Failed to get car: " + e.Message);
+                logger.LogError(e, "Failed to get car: " + e.Message);
                 throw;
             }
         }
@@ -71,7 +71,7 @@ namespace Cars.DataAccess
             List<CarResponsePayload>? cars = [];
             try
             {
-                var query = cosmosClient.GetItemQueryIterator<CarResponsePayload>("SELECT * FROM c");
+                var query = container.GetItemQueryIterator<CarResponsePayload>("SELECT * FROM c");
                 while (query.HasMoreResults)
                 {
                     var response = await query.ReadNextAsync();
@@ -89,7 +89,7 @@ namespace Cars.DataAccess
             }
             catch (CosmosException e)
             {
-                logger.LogError("Failed to get cars: " + e);
+                logger.LogError(e, "Failed to get cars: " + e);
                 throw;
             }
         }
@@ -98,12 +98,12 @@ namespace Cars.DataAccess
         {
             try
             {
-                await cosmosClient.DeleteItemAsync<Car>(id, new PartitionKey(id));
+                await container.DeleteItemAsync<Car>(id, new PartitionKey(id));
                 logger.LogInformation("Deleted car with ID: " + id);
             }
             catch (CosmosException e)
             {
-                logger.LogError("Failed to delete car: " + e.Message);
+                logger.LogError(e, "Failed to delete car: " + e.Message);
                 throw;
             }
         }
@@ -123,7 +123,7 @@ namespace Cars.DataAccess
                 }
                 
                 // Create a transactional batch with all patch operations
-                var batch = cosmosClient.CreateTransactionalBatch(new PartitionKey(id));
+                var batch = container.CreateTransactionalBatch(new PartitionKey(id));
                 batch.PatchItem(id, [.. patchOperations]);
                 
                 // Execute the batch transaction
@@ -132,20 +132,21 @@ namespace Cars.DataAccess
                 // Check if the batch operation was successful
                 if (!response.IsSuccessStatusCode)
                 {
-                    logger.LogError($"Failed to update car with ID: {id}, Status: {response.StatusCode}");
-                    throw new Exception($"Failed to update car with ID: {id}. Status: {response.StatusCode}, Message: {response.ErrorMessage}, FailedRequests: {response.Diagnostics.GetFailedRequestCount()}, Exception: {response.Diagnostics.GetQueryMetrics()}");
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        logger.LogError($"Car with ID: {id} not found.");
+                        throw new DataNotFoundException($"Car with ID {id} not found");
+                    }
+
+                    logger.LogError($"Failed to update car with ID: {id}, Status: {response.StatusCode}, Message: {response.ErrorMessage}");
+                    throw new Exception($"Failed to update car with ID: {id}. Status: {response.StatusCode}, Message: {response.ErrorMessage}");
                 }
                 
                 logger.LogInformation($"Successfully updated car with ID: {id}");
             }
-            catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                logger.LogError($"Car not found with ID: {id}");
-                throw new DataNotFoundException($"Car with ID {id} not found");
-            }
             catch (CosmosException e)
             {
-                logger.LogError($"Failed to update car: {e.Message}");
+                logger.LogError(e, $"Failed to update car: {e.Message}");
                 throw;
             }
         }
