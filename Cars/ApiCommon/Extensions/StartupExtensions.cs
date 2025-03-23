@@ -2,7 +2,6 @@ using Cars.ApiCommon.Cosmos.Options;
 using Cars.DataAccess;
 using Cars.Management;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
 
 namespace Cars.ApiCommon.Extensions
 {

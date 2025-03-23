@@ -8,14 +8,19 @@ namespace Cars.ApiCommon.Cosmos.Options
     {
         public const string SectionKey = "CosmosDB:CosmosAccountOptions";
 
+        /// <summary>
+        /// Gets or sets the Cosmos DB account endpoint.
+        /// </summary>
         public string AccountEndpoint { get; set; } = null!;
-
-        public string? AccountKey { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether MSI credentials will be used or not.
         /// </summary>
-        public bool UseMSICredentials { get; set; }
+        public bool UseManagedIdentity { get; set; }
+
+        /// <summary>
+        /// The environment variable name for the Cosmos DB MSI client ID.
+        public string CosmosMSIEnvName = "COSMOS_MSI_CLIENT_ID";
 
         /// <summary>
         /// Gets or sets the Cosmos client to use for connecting to the Cosmos DB account.
@@ -28,28 +33,43 @@ namespace Cars.ApiCommon.Cosmos.Options
         /// <param name="logger">The logger to use for logging.</param>
         /// <param name="cosmosContainerOptions">The Cosmos container options.</param>
         public void InitializeCosmosClient(ILogger logger, CosmosContainerOptions? cosmosContainerOptions = null)
+        {
+            ArgumentNullException.ThrowIfNull(cosmosContainerOptions, nameof(cosmosContainerOptions));
+
+            TokenCredential credential; 
+            if (UseManagedIdentity)
             {
-                ArgumentNullException.ThrowIfNull(cosmosContainerOptions, nameof(cosmosContainerOptions));
-
-                if (UseMSICredentials)
-                {
-                    var clientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
-                    var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
-                    var clientSecret = Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET");
-                    logger.LogDebug($"Using MSI credentials with clientId: {clientId}, tenantId: {tenantId}, clientSecret: {clientSecret}");
-
-                    IReadOnlyList<(string, string)> container =[ (cosmosContainerOptions.DatabaseId, cosmosContainerOptions.ContainerId) ];
-                    
-                    TokenCredential tokenCredential = new DefaultAzureCredential();
-                    // Ensure the CosmosCLient is initialized synchronously when registering as a singleton.
-                    CosmosClient ??= CosmosClient.CreateAndInitializeAsync(AccountEndpoint, tokenCredential, container).GetAwaiter().GetResult();
-                    logger.LogInformation($"Cosmos DB client initialized with TokenCredential for endpoint: {CosmosClient.Endpoint.AbsoluteUri}");
-                }
-                else
-                {
-                    CosmosClient ??= new CosmosClient($"AccountEndpoint={AccountEndpoint};AccountKey={AccountKey};");
-                    logger.LogInformation($"Cosmos DB client initialized with AccountKey for endpoint: {CosmosClient.Endpoint.AbsoluteUri}");
-                }
+                // In production, use ManagedIdentityCredential specifically
+                logger.LogInformation("Using Managed Identity for Cosmos DB authentication");
+                var clientId = Environment.GetEnvironmentVariable(CosmosMSIEnvName);
+                credential = new ManagedIdentityCredential(clientId);
             }
+            else
+            {
+                // For local development, use DefaultAzureCredential
+                // This will try environment variables, Visual Studio, Azure CLI, etc.
+                logger.LogInformation("Using DefaultAzureCredential for Cosmos DB authentication");
+                credential = new DefaultAzureCredential();
+            }
+            
+            try
+            {
+                // Initialize container for CosmosClient
+                IReadOnlyList<(string, string)> containers = [
+                    (cosmosContainerOptions.DatabaseId, cosmosContainerOptions.ContainerId)
+                ];                
+                CosmosClient ??= CosmosClient.CreateAndInitializeAsync(
+                    AccountEndpoint, 
+                    credential, 
+                    containers).GetAwaiter().GetResult();
+                
+                logger.LogInformation($"Cosmos DB client initialized for endpoint: {CosmosClient.Endpoint.AbsoluteUri}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to initialize Cosmos DB client with token credentials");
+                throw;
+            }
+        }
     }
 }
