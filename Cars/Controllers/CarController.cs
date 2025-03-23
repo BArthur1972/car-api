@@ -100,8 +100,8 @@ namespace Cars.Controllers
                     return BadRequest("Update payload must contain at least one property to update");
                 }
                 
-                await carManagementProvider.UpdateCar(id, updatePayload).ConfigureAwait(false);
-                return Ok($"Successfully updated car with id: {id}");
+                CarResponsePayload updatedCar = await carManagementProvider.UpdateCar(id, updatePayload).ConfigureAwait(false);
+                return Ok($"Successfully updated car: " + updatedCar.ToString());
             }
             catch (DataNotFoundException e)
             {

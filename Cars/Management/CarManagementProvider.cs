@@ -50,20 +50,17 @@ namespace Cars.Management
 
         public async Task<CarResponsePayload?> GetCar(string id)
         {
-            CarResponsePayload? car = null;
             try
             {
-                var response = await carDataProvider.GetCarAsync(id);
-                logger.LogInformation("Car obtained: " + response.ToString());
-                car = response;
+                var car = await carDataProvider.GetCarAsync(id);
+                logger.LogInformation("Car obtained: " + car.ToString());
+                return car;
             }
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to get car: " + e.Message);
                 throw;
             }
-
-            return car;
         }
 
         public async Task RemoveCar(string id)
@@ -80,12 +77,14 @@ namespace Cars.Management
             }
         }
 
-        public async Task UpdateCar(string id, CarUpdatePayload updatePayload)
+        public async Task<CarResponsePayload> UpdateCar(string id, CarUpdatePayload updatePayload)
         {
             try
             {
                 await carDataProvider.UpdateCarAsync(id, updatePayload);
-                logger.LogInformation($"Updated car with ID: {id}, Changes: {updatePayload.ToString()}");
+                logger.LogInformation($"Updated car with ID: {id}, Changes: {updatePayload}");
+
+                return await carDataProvider.GetCarAsync(id).ConfigureAwait(false);
             }
             catch (Exception e)
             {

@@ -173,8 +173,7 @@ namespace Cars.DataAccess
                 patchOperations.Add(PatchOperation.Set("/year", updatePayload.Year));
             }
             
-            // For imageUrl, we need to handle it explicitly
-            if (updatePayload.GetType().GetProperty("ImageUrl")?.GetValue(updatePayload) != null)
+            if (updatePayload.ImageUrl != null)
             {
                 patchOperations.Add(PatchOperation.Set("/imageUrl", updatePayload.ImageUrl));
             }

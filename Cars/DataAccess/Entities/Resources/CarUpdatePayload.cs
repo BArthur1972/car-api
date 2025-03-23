@@ -16,7 +16,7 @@ namespace Cars.DataAccess.Entities.Resources
         [JsonProperty("year")]
         public int? Year { get; set; }
 
-        [JsonProperty("imageUrl")]
+        [JsonProperty("imageUrl", NullValueHandling = NullValueHandling.Ignore)]
         public string? ImageUrl { get; set; }
         
         public CarUpdatePayload(string? make = null, string? model = null, int? year = null, string? imageUrl = null)
