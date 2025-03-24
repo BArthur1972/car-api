@@ -1,3 +1,4 @@
+using System.Net;
 using Cars.ApiCommon.Errors;
 using ApplicationException = Cars.ApiCommon.Exceptions.ApplicationException;
 
@@ -49,7 +50,7 @@ namespace Cars.ApiCommon.Middlewares
             ErrorDetail errorDetail;
             HttpResponse response = context.Response;
             
-            // All exceptions either inherit from ApplicationException or are wrapped in it.
+            // All exceptions should either inherit from ApplicationException.
             if (exception is ApplicationException appEx)
             {
                 response.StatusCode = appEx.HttpStatusCode;
@@ -60,7 +61,7 @@ namespace Cars.ApiCommon.Middlewares
             }
             else // For any other unhandled exception, we return 500 Internal Server Error.
             {
-                response.StatusCode = 500;
+                response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 errorDetail = new ErrorDetail(
                     "InternalServerError",
                     "An internal server error has occurred."
