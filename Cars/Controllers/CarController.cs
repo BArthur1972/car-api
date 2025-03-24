@@ -36,26 +36,8 @@ namespace Cars.Controllers
         [HttpGet("/getCar/{id}")]
         public async Task<ActionResult> GetCar(string id)
         {
-            try
-            {
-                CarResponsePayload? car = await carManagementProvider.GetCar(id).ConfigureAwait(false);
-                if (car == null)
-                {
-                    logger.LogError("Car with id: " + id + " not found.");
-                    throw new DataNotFoundException("Car not found");
-                }
-                logger.LogInformation("Car obtained: " + car.ToString());
-                return Ok(car);
-            }
-            catch (DataNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to get car");
-                return StatusCode(500, "Internal Server Error. Failed to get car. Check logs for more information.");
-            }
+            CarResponsePayload? car = await carManagementProvider.GetCar(id).ConfigureAwait(false);
+            return Ok(car);
         }
 
         [HttpPost]

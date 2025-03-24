@@ -2,9 +2,9 @@ using System.Net;
 
 namespace Cars.ApiCommon.Exceptions
 {
-    public class DataNotFoundException(
-        string statusCode = "NotFound",
-        int httpStatusCode = (int)HttpStatusCode.NotFound,
+    public class BadRequestException(
+        string statusCode = "BadRequest",
+        int httpStatusCode = (int)HttpStatusCode.BadRequest,
         string? message = null,
         Exception? innerException = null)
         : ApplicationException(statusCode, httpStatusCode, message, innerException)

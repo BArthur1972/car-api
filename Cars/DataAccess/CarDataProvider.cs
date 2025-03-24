@@ -55,8 +55,7 @@ namespace Cars.DataAccess
             }
             catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                logger.LogError(e, "Car not found");
-                throw new DataNotFoundException("Car not found");
+                throw new DataNotFoundException(message: "Car not found");
             }
             catch (Exception e)
             {
@@ -80,7 +79,7 @@ namespace Cars.DataAccess
                 if (cars.Count == 0)
                 {
                     logger.LogError("No cars found");
-                    throw new DataNotFoundException("No cars found");
+                    throw new DataNotFoundException(message: "No cars found");
                 }
 
                 logger.LogDebug("Cars obtained: " + cars.Count + " cars");
