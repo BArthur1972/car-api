@@ -1,23 +1,23 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Cars.DataAccess.Entities.Resources
 {
     // This class will be used to deserialize the response payload
     public class CarResponsePayload
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty("make")]
+        [JsonPropertyName("make")]
         public string Make { get; set; }
 
-        [JsonProperty("model")]
+        [JsonPropertyName("model")]
         public string Model { get; set; }
 
-        [JsonProperty("year")]
+        [JsonPropertyName("year")]
         public int Year { get; set; }
 
-        [JsonProperty("imageUrl", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
 
         public CarResponsePayload(string id, string make, string model, int year, string? imageUrl)

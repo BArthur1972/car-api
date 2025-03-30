@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Cars.DataAccess.Entities.Resources
 {
@@ -7,16 +7,16 @@ namespace Cars.DataAccess.Entities.Resources
     /// </summary>
     public class CarUpdatePayload
     {
-        [JsonProperty("make")]
+        [JsonPropertyName("make")]
         public string? Make { get; set; }
 
-        [JsonProperty("model")]
+        [JsonPropertyName("model")]
         public string? Model { get; set; }
 
-        [JsonProperty("year")]
+        [JsonPropertyName("year")]
         public int? Year { get; set; }
 
-        [JsonProperty("imageUrl", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
         
         public CarUpdatePayload(string? make = null, string? model = null, int? year = null, string? imageUrl = null)

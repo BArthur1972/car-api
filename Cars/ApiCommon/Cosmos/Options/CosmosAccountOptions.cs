@@ -57,11 +57,22 @@ namespace Cars.ApiCommon.Cosmos.Options
                 // Initialize container for CosmosClient
                 IReadOnlyList<(string, string)> containers = [
                     (cosmosContainerOptions.DatabaseId, cosmosContainerOptions.ContainerId)
-                ];                
+                ];
+
+                // Options to override default serialization and use System.Text.Json
+                CosmosClientOptions clientOptions = new()
+                {
+                    UseSystemTextJsonSerializerWithOptions = new System.Text.Json.JsonSerializerOptions()
+                    {
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                    }
+                };
+
                 CosmosClient ??= CosmosClient.CreateAndInitializeAsync(
                     AccountEndpoint, 
                     credential, 
-                    containers).GetAwaiter().GetResult();
+                    containers,
+                    clientOptions).GetAwaiter().GetResult(); // Calling GetAwaiter().GetResult() to block until the task is completed.
                 
                 logger.LogInformation($"Cosmos DB client initialized for endpoint: {CosmosClient.Endpoint.AbsoluteUri}");
             }

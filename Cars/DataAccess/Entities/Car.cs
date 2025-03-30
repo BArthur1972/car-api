@@ -1,22 +1,22 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Cars.DataAccess.Entities
 {
     public class Car
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty("make")]
+        [JsonPropertyName("make")]
         public string Make { get; set; }
 
-        [JsonProperty("model")]
+        [JsonPropertyName("model")]
         public string Model { get; set; }
 
-        [JsonProperty("year")]
+        [JsonPropertyName("year")]
         public int Year { get; set; }
 
-        [JsonProperty("imageUrl")]
+        [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
 
         public Car(string make, string model, int year, string? imageUrl = null)

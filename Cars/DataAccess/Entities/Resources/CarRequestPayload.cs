@@ -1,25 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Cars.DataAccess.Entities.Resources
 {
     public class CarRequestPayload
     {
-        [Required]
-        [JsonProperty("make")]
-        public string Make { get; set; }
+        public required string Make { get; set; }
 
-        [Required]
-        [JsonProperty("model")]
-        public string Model { get; set; }
+        public required string Model { get; set; }
 
-        [Required]
-        [JsonProperty("year")]
-        public int Year { get; set; }
+        public required int Year { get; set; }
 
-        [JsonProperty("imageUrl", NullValueHandling = NullValueHandling.Ignore)]
         public string? ImageUrl { get; set; }
         
+        [JsonConstructor]
         public CarRequestPayload(string make, string model, int year, string? imageUrl)
         {
             Make = make;
